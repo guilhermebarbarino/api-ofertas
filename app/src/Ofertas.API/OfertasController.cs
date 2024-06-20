@@ -2,7 +2,10 @@
 using Microsoft.Extensions.Caching.Memory;
 using Ofertas.Application;
 using Ofertas.Application.Services;
-using Ofertas.Domain.Entidades;
+using Ofertas.Application.ViewModels;
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Ofertas.API.Controllers
 {
@@ -21,9 +24,9 @@ namespace Ofertas.API.Controllers
         }
 
         [HttpGet]
-        public async Task<IEnumerable<Oferta>> Get()
+        public async Task<IEnumerable<OfertaResponse>> Get()
         {
-            if (!_cache.TryGetValue(OfertasCacheKey, out IEnumerable<Oferta> ofertas))
+            if (!_cache.TryGetValue(OfertasCacheKey, out IEnumerable<OfertaResponse> ofertas))
             {
                 ofertas = await _ofertaService.GetAllAsync();
 
@@ -37,28 +40,39 @@ namespace Ofertas.API.Controllers
         }
 
         [HttpGet("{id}")]
-        public async Task<Oferta> Get(Guid id)
+        public async Task<OfertaResponse> Get(Guid id)
         {
             return await _ofertaService.GetByIdAsync(id);
         }
 
         [HttpPost]
-        public async Task<IActionResult> Post([FromBody] Oferta oferta)
+        public async Task<IActionResult> Post([FromBody] OfertaRequest ofertaRequest)
         {
-            await _ofertaService.AddAsync(oferta);
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            await _ofertaService.AddAsync(ofertaRequest);
             _cache.Remove(OfertasCacheKey);
             return Ok();
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> Put(Guid id, [FromBody] Oferta oferta)
+        public async Task<IActionResult> Put(Guid id, [FromBody] OfertaRequest ofertaRequest)
         {
-            if (id != oferta.Id)
+            if (!ModelState.IsValid)
             {
-                return BadRequest();
+                return BadRequest(ModelState);
             }
 
-            await _ofertaService.UpdateAsync(oferta);
+            var oferta = await _ofertaService.GetByIdAsync(id);
+            if (oferta == null)
+            {
+                return NotFound();
+            }
+
+            await _ofertaService.UpdateAsync(ofertaRequest);
             _cache.Remove(OfertasCacheKey);
             return Ok();
         }
@@ -66,6 +80,12 @@ namespace Ofertas.API.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(Guid id)
         {
+            var oferta = await _ofertaService.GetByIdAsync(id);
+            if (oferta == null)
+            {
+                return NotFound();
+            }
+
             await _ofertaService.DeleteAsync(id);
             _cache.Remove(OfertasCacheKey);
             return Ok();
