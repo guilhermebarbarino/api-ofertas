@@ -1,4 +1,5 @@
-﻿using Ofertas.Domain.Entidades;
+﻿using Ofertas.Application.ViewModels;
+using Ofertas.Domain.Entidades;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,10 +10,10 @@ namespace Ofertas.Application
 {
     public interface IOfertaService
     {
-        Task<IEnumerable<Oferta>> GetAllAsync();
-        Task<Oferta> GetByIdAsync(Guid id);
-        Task AddAsync(Oferta oferta);
-        Task UpdateAsync(Oferta oferta);
+        Task<IEnumerable<OfertaResponse>> GetAllAsync();
+        Task<OfertaResponse> GetByIdAsync(Guid id);
+        Task AddAsync(OfertaRequest oferta);
+        Task UpdateAsync(OfertaRequest oferta);
         Task DeleteAsync(Guid id);
     }
 }

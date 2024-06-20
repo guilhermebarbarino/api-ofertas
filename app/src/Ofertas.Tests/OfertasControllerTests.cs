@@ -7,11 +7,10 @@ using Moq;
 using Xunit;
 using Ofertas.API.Controllers;
 using Ofertas.Application.Services;
-using Ofertas.Domain.Entidades;
-using Ofertas.Infrastructure.interfaces;
+using Ofertas.Application.ViewModels;
 using Ofertas.Application;
 
-namespace ofertas_solutions.Tests
+namespace Ofertas.Tests
 {
     public class OfertasControllerTests
     {
@@ -23,19 +22,35 @@ namespace ofertas_solutions.Tests
         {
             _mockService = new Mock<IOfertaService>();
             _mockCache = new Mock<IMemoryCache>();
-            _controller = new OfertasController(_mockService.Object,_mockCache.Object);
+            _controller = new OfertasController(_mockService.Object, _mockCache.Object);
         }
 
-       
+
+        [Fact]
+        public async Task GetById_ReturnsOfertaFromService()
+        {
+            // Arrange
+            var id = Guid.NewGuid();
+            var oferta = new OfertaResponse { Titulo = "Oferta 1" , Preco = 10 };
+            _mockService.Setup(service => service.GetByIdAsync(id)).ReturnsAsync(oferta);
+
+            // Act
+            var result = await _controller.Get(id);
+
+            // Assert
+            Assert.IsType<OfertaResponse>(result);
+            Assert.Equal(oferta.Id, result.Id);
+        }
+
         [Fact]
         public async Task Post_ReturnsOkResult()
         {
             // Arrange
-            var oferta = new Oferta { Titulo = "Nova Oferta", Descricao = "Descrição da Nova Oferta" };
-            _mockService.Setup(service => service.AddAsync(oferta)).Returns(Task.CompletedTask);
+            var ofertaRequest = new OfertaRequest { Titulo = "Nova Oferta", Descricao = "Descrição da Nova Oferta", Preco = 100, DataCriacao = DateTime.UtcNow };
+            _mockService.Setup(service => service.AddAsync(ofertaRequest)).Returns(Task.CompletedTask);
 
             // Act
-            var result = await _controller.Post(oferta);
+            var result = await _controller.Post(ofertaRequest);
 
             // Assert
             Assert.IsType<OkResult>(result);
@@ -47,11 +62,12 @@ namespace ofertas_solutions.Tests
         {
             // Arrange
             var id = Guid.NewGuid();
-            var oferta = new Oferta { Id = id, Titulo = "Oferta Atualizada", Descricao = "Descrição Atualizada" };
-            _mockService.Setup(service => service.UpdateAsync(oferta)).Returns(Task.CompletedTask);
+            var ofertaRequest = new OfertaRequest { Titulo = "Oferta Atualizada", Descricao = "Descrição Atualizada", Preco = 200, DataCriacao = DateTime.UtcNow };
+            _mockService.Setup(service => service.GetByIdAsync(id)).ReturnsAsync(new OfertaResponse { Titulo = "Oferta teste" });
+            _mockService.Setup(service => service.UpdateAsync(ofertaRequest)).Returns(Task.CompletedTask);
 
             // Act
-            var result = await _controller.Put(id, oferta);
+            var result = await _controller.Put(id, ofertaRequest);
 
             // Assert
             Assert.IsType<OkResult>(result);
@@ -63,6 +79,7 @@ namespace ofertas_solutions.Tests
         {
             // Arrange
             var id = Guid.NewGuid();
+            _mockService.Setup(service => service.GetByIdAsync(id)).ReturnsAsync(new OfertaResponse { Titulo = "Oferta teste"});
             _mockService.Setup(service => service.DeleteAsync(id)).Returns(Task.CompletedTask);
 
             // Act

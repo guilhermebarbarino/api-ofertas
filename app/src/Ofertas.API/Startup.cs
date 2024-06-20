@@ -2,6 +2,7 @@
 using FluentValidation.AspNetCore;
 using Microsoft.EntityFrameworkCore;
 using Ofertas.Application;
+using Ofertas.Application.Automapper;
 using Ofertas.Application.Services;
 using Ofertas.Application.Validators;
 using Ofertas.Domain.Entidades;
@@ -38,6 +39,8 @@ namespace Ofertas.API
 
             services.AddControllers()
                 .AddFluentValidation(fv => fv.RegisterValidatorsFromAssemblyContaining<OfertaValidator>());
+
+            services.AddAutoMapper(typeof(MappingProfile));
 
             services.AddEndpointsApiExplorer();
             services.AddSwaggerGen();
