@@ -36,10 +36,6 @@ jobs:
       - name: Publish the API
         run: dotnet publish ${{ env.Api_Project_Path }} --configuration Release --output ./publish
 
-      - name: Build Docker image
-        run: |
-          docker build -t ofertas-api:${{ github.sha }} -f Ofertas.API/Dockerfile .
-
       - name: Push Docker image to GitHub Packages
         run: |
           echo ${{ secrets.DOCKER_PASSWORD }} | docker login ghcr.io -u ${{ secrets.DOCKER_USERNAME }} --password-stdin
