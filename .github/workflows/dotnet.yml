@@ -38,7 +38,7 @@ jobs:
 
       - name: Build Docker image
         run: |
-          docker build -t ofertas-api:${{ github.sha }} -f Ofertas.API/Dockerfile .
+          docker build -t api-ofertas:${{ github.sha }} -f Ofertas.API/Dockerfile .
 
       - name: Push Docker image to GitHub Packages
         run: |
